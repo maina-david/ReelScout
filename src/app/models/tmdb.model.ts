@@ -16,6 +16,7 @@ export interface TmdbMedia {
 export interface WatchlistItem extends TmdbMedia {
   watchlistCategory: 'want' | 'watching' | 'watched';
   addedAt: number;
+  notes?: string;
 }
 
 export interface TmdbMovie {

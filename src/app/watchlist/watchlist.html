@@ -1,6 +1,31 @@
 <div class="min-h-screen bg-[#141414] text-white animate-page-in">
   <div class="max-w-screen-2xl mx-auto px-6 py-10">
 
+    @if (pickedItem(); as item) {
+      <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" (click)="closePick()">
+        <div class="bg-[#1f1f1f] rounded-2xl shadow-2xl border border-white/10 w-full max-w-sm overflow-hidden" (click)="$event.stopPropagation()">
+          <div class="relative">
+            @if (posterUrl(item)) {
+              <img [src]="posterUrl(item)" [alt]="item.title ?? item.name" class="w-full h-56 object-cover object-top"/>
+            }
+            <div class="absolute inset-0 bg-linear-to-t from-[#1f1f1f] via-transparent to-transparent"></div>
+            <button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors" (click)="closePick()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-5">
+            <p class="text-xs text-[#e50914] font-bold uppercase tracking-widest mb-1">Tonight's Pick</p>
+            <h3 class="text-xl font-black mb-1">{{ item.title ?? item.name }}</h3>
+            <p class="text-gray-400 text-xs mb-4">{{ (item.release_date ?? item.first_air_date ?? '').slice(0, 4) }} · {{ item.media_type === 'movie' ? 'Movie' : 'TV Show' }}</p>
+            <div class="flex gap-2">
+              <button class="flex-1 bg-[#e50914] hover:bg-[#f40612] text-white font-semibold py-2 rounded-md text-sm transition-colors" (click)="viewPicked()">View Details</button>
+              <button class="flex-1 bg-[#2a2a2a] hover:bg-[#333] text-white font-semibold py-2 rounded-md text-sm transition-colors" (click)="pickAgain()">Pick Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div class="flex items-center gap-3">
         <h1 class="text-2xl font-bold">My Watchlist</h1>
@@ -9,18 +34,50 @@
         }
       </div>
 
-      @if (watchlist.items().length > 1) {
-        <select
-          [value]="sortBy()"
-          (change)="sortBy.set($any($event.target).value)"
-          class="bg-[#1f1f1f] border border-gray-700 text-gray-300 text-sm rounded-md px-3 py-2 focus:outline-none focus:border-[#e50914] transition-colors"
-        >
-          @for (opt of sortOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-      }
+      <div class="flex items-center gap-2 flex-wrap">
+        @if (watchlist.wantToWatch().length) {
+          <button
+            class="flex items-center gap-1.5 px-4 py-2 bg-[#2a2a2a] hover:bg-[#333] border border-gray-700 rounded-md text-sm font-medium text-gray-300 transition-colors"
+            (click)="pickForMe()"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Pick for Me
+          </button>
+        }
+        @if (watchlist.items().length) {
+          <button
+            class="flex items-center gap-1.5 px-4 py-2 bg-[#2a2a2a] hover:bg-[#333] border border-gray-700 rounded-md text-sm font-medium text-gray-300 transition-colors"
+            (click)="exportWatchlist()"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            Export
+          </button>
+          <select
+            [value]="sortBy()"
+            (change)="sortBy.set($any($event.target).value)"
+            class="bg-[#1f1f1f] border border-gray-700 text-gray-300 text-sm rounded-md px-3 py-2 focus:outline-none focus:border-[#e50914] transition-colors"
+          >
+            @for (opt of sortOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        }
+      </div>
     </div>
+
+    @if (tonightPick(); as pick) {
+      <div class="flex items-center gap-4 p-4 bg-[#1a1a1a] border border-[#e50914]/30 rounded-xl mb-6">
+        @if (posterUrl(pick)) {
+          <img [src]="posterUrl(pick)" [alt]="pick.title ?? pick.name" class="w-10 h-14 object-cover rounded shrink-0"/>
+        }
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-[#e50914] font-bold uppercase tracking-wider mb-0.5">What to Watch Tonight</p>
+          <p class="text-white font-semibold truncate">{{ pick.title ?? pick.name }}</p>
+          <p class="text-gray-500 text-xs">{{ (pick.release_date ?? '').slice(0, 4) }}</p>
+        </div>
+        <a [routerLink]="['/movie', pick.id]" class="shrink-0 px-3 py-1.5 bg-[#e50914] hover:bg-[#f40612] text-white text-xs font-semibold rounded-md transition-colors">Watch</a>
+      </div>
+    }
 
     @if (watchlist.items().length) {
       <div class="flex gap-2 mb-8 overflow-x-auto pb-1" style="scrollbar-width:none">
@@ -56,12 +113,33 @@
                 <button
                   class="px-2 py-1 bg-[#1f1f1f] border border-gray-700 rounded text-gray-500 hover:text-[#e50914] hover:border-[#e50914] transition-colors"
                   (click)="remove(item.id)"
+                  title="Remove"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
                 </button>
               </div>
+              @if (editingNotesId() === item.id) {
+                <div class="mt-1">
+                  <textarea
+                    class="w-full bg-[#1a1a1a] border border-gray-700 text-gray-300 text-xs rounded px-2 py-1.5 resize-none focus:outline-none focus:border-[#e50914] transition-colors"
+                    rows="2"
+                    placeholder="Add a note..."
+                    [ngModel]="notesValue()"
+                    (ngModelChange)="notesValue.set($event)"
+                    (blur)="saveNotes(item.id)"
+                    autofocus
+                  ></textarea>
+                </div>
+              } @else {
+                <button
+                  class="mt-1 w-full text-left text-[11px] text-gray-600 hover:text-gray-400 transition-colors truncate px-0.5"
+                  (click)="startEditNotes(item)"
+                >
+                  {{ item.notes ? item.notes : '+ Add note' }}
+                </button>
+              }
             </div>
           }
         </div>
@@ -79,9 +157,7 @@
         </svg>
         <p class="text-gray-400 text-lg mb-2">Your watchlist is empty</p>
         <p class="text-gray-600 text-sm mb-6">Add movies and shows by clicking the heart icon on any card</p>
-        <a routerLink="/" class="bg-[#e50914] hover:bg-[#f40612] text-white font-semibold px-6 py-3 rounded-md transition-colors">
-          Browse Content
-        </a>
+        <a routerLink="/" class="bg-[#e50914] hover:bg-[#f40612] text-white font-semibold px-6 py-3 rounded-md transition-colors">Browse Content</a>
       </div>
     }
   </div>

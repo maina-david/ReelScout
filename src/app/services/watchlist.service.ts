@@ -46,6 +46,12 @@ export class WatchlistService {
     this.persist(updated);
   }
 
+  updateNotes(id: number, notes: string): void {
+    const updated = this._items().map(m => m.id === id ? { ...m, notes } : m);
+    this._items.set(updated);
+    this.persist(updated);
+  }
+
   private persist(items: WatchlistItem[]): void {
     try { localStorage.setItem(this.KEY, JSON.stringify(items)); } catch { }
   }

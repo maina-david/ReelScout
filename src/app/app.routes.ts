@@ -50,6 +50,10 @@ export const routes: Routes = [
     loadComponent: () => import('./calendar/calendar').then(m => m.CalendarPage),
   },
   {
+    path: 'discover',
+    loadComponent: () => import('./discover/discover').then(m => m.DiscoverPage),
+  },
+  {
     path: '**',
     loadComponent: () => import('./not-found/not-found').then(m => m.NotFound),
   },

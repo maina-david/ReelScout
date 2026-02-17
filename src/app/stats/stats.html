@@ -37,7 +37,33 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+      <div class="bg-[#1f1f1f] rounded-xl p-4 text-center border border-white/5">
+        <p class="text-2xl font-black text-orange-400 mb-1">
+          @if (estimatedWatchTime().hours > 0) {
+            {{ estimatedWatchTime().hours }}<span class="text-base font-normal text-gray-500">h</span>
+            {{ estimatedWatchTime().minutes }}<span class="text-base font-normal text-gray-500">m</span>
+          } @else {
+            {{ estimatedWatchTime().minutes }}<span class="text-base font-normal text-gray-500">m</span>
+          }
+        </p>
+        <p class="text-xs text-gray-500 uppercase tracking-wider">Est. Watch Time</p>
+      </div>
+      <div class="bg-[#1f1f1f] rounded-xl p-4 text-center border border-white/5">
+        <p class="text-2xl font-black text-cyan-400 mb-1">{{ thisMonthAdded() }}</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wider">Added This Month</p>
+      </div>
+      <div class="bg-[#1f1f1f] rounded-xl p-4 text-center border border-white/5">
+        <p class="text-2xl font-black text-pink-400 mb-1">{{ challenges.completedCount() }}<span class="text-base font-normal text-gray-500">/{{ challenges.challenges().length }}</span></p>
+        <p class="text-xs text-gray-500 uppercase tracking-wider">Challenges Done</p>
+      </div>
+      <div class="bg-[#1f1f1f] rounded-xl p-4 text-center border border-white/5">
+        <p class="text-2xl font-black text-indigo-400 mb-1">{{ watched() }}</p>
+        <p class="text-xs text-gray-500 uppercase tracking-wider">Marked Watched</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
 
       <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5">
         <h2 class="text-base font-bold mb-5">Watchlist Status</h2>
@@ -84,16 +110,10 @@
           </div>
           <div class="h-3 bg-[#2a2a2a] rounded-full overflow-hidden flex">
             @if (moviesInWatchlist()) {
-              <div
-                class="h-full bg-blue-500 transition-all duration-700"
-                [style.width.%]="(moviesInWatchlist() / totalWatchlist()) * 100"
-              ></div>
+              <div class="h-full bg-blue-500 transition-all duration-700" [style.width.%]="(moviesInWatchlist() / totalWatchlist()) * 100"></div>
             }
             @if (tvInWatchlist()) {
-              <div
-                class="h-full bg-purple-500 transition-all duration-700"
-                [style.width.%]="(tvInWatchlist() / totalWatchlist()) * 100"
-              ></div>
+              <div class="h-full bg-purple-500 transition-all duration-700" [style.width.%]="(tvInWatchlist() / totalWatchlist()) * 100"></div>
             }
           </div>
           <div class="flex gap-4 mt-3 text-xs text-gray-500">
@@ -122,10 +142,7 @@
                   }
                 </div>
                 <div class="flex-1 h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-yellow-400 rounded-full transition-all duration-700"
-                    [style.width.%]="(d.count / maxRatingCount()) * 100"
-                  ></div>
+                  <div class="h-full bg-yellow-400 rounded-full transition-all duration-700" [style.width.%]="(d.count / maxRatingCount()) * 100"></div>
                 </div>
                 <span class="text-xs text-gray-500 w-5 text-right">{{ d.count }}</span>
               </div>
@@ -135,6 +152,10 @@
           <p class="text-gray-600 text-sm text-center py-6">Rate items using the ★ on any card</p>
         }
       </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
 
       <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5 md:col-span-2 xl:col-span-3">
         <h2 class="text-base font-bold mb-5">Favourite Genres</h2>
@@ -160,6 +181,57 @@
         } @else {
           <p class="text-gray-600 text-sm">Add movies or shows to your watchlist to see genre stats</p>
         }
+      </div>
+
+      @if (decadeBreakdown().length) {
+        <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5">
+          <h2 class="text-base font-bold mb-5">By Decade</h2>
+          <div class="space-y-3">
+            @for (d of decadeBreakdown(); track d.decade) {
+              <div class="flex items-center gap-3">
+                <span class="text-gray-400 text-sm w-12 shrink-0">{{ d.decade }}s</span>
+                <div class="flex-1 h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
+                  <div class="h-full bg-indigo-500 rounded-full transition-all duration-700" [style.width.%]="d.pct"></div>
+                </div>
+                <span class="text-xs text-gray-500 w-5 text-right shrink-0">{{ d.count }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5" [class.md:col-span-2]="!decadeBreakdown().length">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-base font-bold">Challenges</h2>
+          <span class="text-xs text-gray-500">{{ challenges.completedCount() }} / {{ challenges.challenges().length }} done</span>
+        </div>
+        <div class="space-y-4">
+          @for (c of challenges.challenges(); track c.id) {
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center gap-2">
+                  @if (c.completed) {
+                    <svg class="w-4 h-4 text-green-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                  } @else {
+                    <div class="w-4 h-4 rounded-full border-2 border-gray-600 shrink-0"></div>
+                  }
+                  <span class="text-sm font-medium" [class]="c.completed ? 'text-gray-400 line-through' : 'text-white'">{{ c.title }}</span>
+                </div>
+                <span class="text-xs text-gray-500 shrink-0">{{ c.progress }}/{{ c.target }}</span>
+              </div>
+              <div class="h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden ml-6">
+                <div
+                  class="h-full rounded-full transition-all duration-700"
+                  [class]="c.completed ? 'bg-green-500' : 'bg-[#e50914]'"
+                  [style.width.%]="(c.progress / c.target) * 100"
+                ></div>
+              </div>
+              <p class="text-xs text-gray-600 ml-6 mt-0.5">{{ c.description }}</p>
+            </div>
+          }
+        </div>
       </div>
 
     </div>

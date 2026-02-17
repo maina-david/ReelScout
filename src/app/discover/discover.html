@@ -1,0 +1,81 @@
+<div class="min-h-screen bg-[#141414] text-white px-6 py-10 animate-page-in">
+  <div class="max-w-5xl mx-auto">
+
+    <div class="mb-10">
+      <h1 class="text-3xl font-black mb-1">Mood Discovery</h1>
+      <p class="text-gray-400 text-sm">Pick a vibe, choose a type, and we'll find something to watch.</p>
+    </div>
+
+    <section class="mb-8">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-[#e50914] mb-4">What's your vibe?</h2>
+      <div class="flex flex-wrap gap-3">
+        @for (mood of moods; track mood.label) {
+          <button
+            class="flex items-center gap-2 px-5 py-3 rounded-xl border text-sm font-semibold transition-all"
+            [class]="selectedMoodLabel() === mood.label
+              ? 'bg-[#e50914] border-[#e50914] text-white'
+              : 'bg-[#1f1f1f] border-gray-700 text-gray-300 hover:border-gray-400 hover:text-white'"
+            (click)="selectMood(mood)"
+          >
+            <span class="text-xl">{{ mood.emoji }}</span>
+            {{ mood.label }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-[#e50914] mb-4">Type</h2>
+      <div class="flex gap-3">
+        <button
+          class="px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all"
+          [class]="mediaType() === 'movie'
+            ? 'bg-white text-black border-white'
+            : 'bg-[#1f1f1f] border-gray-700 text-gray-300 hover:border-gray-400 hover:text-white'"
+          (click)="setType('movie')"
+        >Movie</button>
+        <button
+          class="px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all"
+          [class]="mediaType() === 'tv'
+            ? 'bg-white text-black border-white'
+            : 'bg-[#1f1f1f] border-gray-700 text-gray-300 hover:border-gray-400 hover:text-white'"
+          (click)="setType('tv')"
+        >TV Show</button>
+      </div>
+    </section>
+
+    <button
+      class="mb-10 px-8 py-3 rounded-xl font-bold text-sm transition-all"
+      [class]="selectedMood()
+        ? 'bg-[#e50914] hover:bg-[#f40612] text-white'
+        : 'bg-[#2a2a2a] text-gray-600 cursor-not-allowed'"
+      [disabled]="!selectedMood()"
+      (click)="discover()"
+    >
+      Find Something to Watch
+    </button>
+
+    @if (loading()) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+          <div class="aspect-2/3 bg-[#2a2a2a] rounded-md animate-pulse"></div>
+        }
+      </div>
+    } @else if (hasSearched() && results().length === 0) {
+      <div class="text-center py-16">
+        <p class="text-gray-400 text-lg">No results found.</p>
+        <p class="text-gray-600 text-sm mt-1">Try a different mood or type.</p>
+      </div>
+    } @else if (results().length) {
+      <div>
+        <p class="text-gray-400 text-sm mb-4">{{ results().length }} results for <span class="text-white font-semibold">{{ selectedMoodLabel() }} {{ mediaType() === 'movie' ? 'movies' : 'TV shows' }}</span></p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          @for (item of results(); track item.id) {
+            <app-media-card [media]="item" />
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

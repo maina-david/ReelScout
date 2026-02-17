@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
+import { ChallengesService } from '../services/challenges.service';
 import { EpisodeProgressService } from '../services/episode-progress.service';
 import { RatingService } from '../services/rating.service';
 import { WatchlistService } from '../services/watchlist.service';
@@ -14,6 +15,7 @@ export class Stats {
   readonly watchlist = inject(WatchlistService);
   readonly progress = inject(EpisodeProgressService);
   readonly ratingService = inject(RatingService);
+  readonly challenges = inject(ChallengesService);
 
   constructor() {
     inject(Title).setTitle('My Stats | ReelScout');
@@ -55,6 +57,35 @@ export class Stats {
       .sort((a, b) => Number(b[1]) - Number(a[1]))
       .slice(0, 8)
       .map(([id, count]) => ({ id: Number(id), count }));
+  });
+
+  estimatedWatchTime = computed(() => {
+    const watchedMovies = this.watchlist.watched().filter(m => m.media_type === 'movie').length;
+    const totalMin = watchedMovies * 100 + this.episodesWatched() * 30;
+    return { hours: Math.floor(totalMin / 60), minutes: totalMin % 60, total: totalMin };
+  });
+
+  thisMonthAdded = computed(() => {
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    return this.watchlist.items().filter(m => (m.addedAt ?? 0) >= monthStart).length;
+  });
+
+  decadeBreakdown = computed(() => {
+    const counts: Record<number, number> = {};
+    this.watchlist.items().forEach(m => {
+      const date = m.release_date ?? m.first_air_date ?? '';
+      if (!date) return;
+      const year = parseInt(date.slice(0, 4), 10);
+      if (isNaN(year)) return;
+      const decade = Math.floor(year / 10) * 10;
+      counts[decade] = (counts[decade] ?? 0) + 1;
+    });
+    const sorted = Object.entries(counts)
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
+      .slice(0, 5)
+      .map(([decade, count]) => ({ decade: Number(decade), count }));
+    const max = Math.max(...sorted.map(d => d.count), 1);
+    return sorted.map(d => ({ ...d, pct: Math.round((d.count / max) * 100) }));
   });
 
   genreNames: Record<number, string> = {

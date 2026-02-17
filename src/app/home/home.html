@@ -355,6 +355,18 @@
         } @placeholder {
           <div class="h-80 mb-10"></div>
         }
+
+        @defer (on viewport) {
+          @if (hiddenGems().length) {
+            <app-media-shelf [dismissible]="true"
+              title="Hidden Gems"
+              [items]="hiddenGems()"
+              viewAllLink="/discover"
+            />
+          }
+        } @placeholder {
+          <div class="h-80 mb-10"></div>
+        }
       }
     }
   </div>
