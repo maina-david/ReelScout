@@ -56,6 +56,10 @@ export class TmdbService {
     return this.get(`/tv/${tvId}/season/${seasonNum}`);
   }
 
+  getEpisodeVideos(tvId: number, seasonNum: number, episodeNum: number): Observable<{ results: import('../models/tmdb.model').TmdbVideo[] }> {
+    return this.get(`/tv/${tvId}/season/${seasonNum}/episode/${episodeNum}/videos`);
+  }
+
   getPersonDetails(id: number): Observable<TmdbPerson> {
     return this.get(`/person/${id}`, { append_to_response: 'combined_credits,images' });
   }

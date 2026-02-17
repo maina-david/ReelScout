@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { TmdbMedia } from '../models/tmdb.model';
@@ -33,6 +33,7 @@ export interface EpisodeEvent {
 export class CalendarPage implements OnInit {
   private tmdb = inject(TmdbService);
   private watchlist = inject(WatchlistService);
+  private sanitizer = inject(DomSanitizer);
 
   constructor() {
     inject(Title).setTitle('Release Calendar | ReelScout');
@@ -44,6 +45,17 @@ export class CalendarPage implements OnInit {
   viewMode = signal<'calendar' | 'list'>('calendar');
   releases = signal<TmdbMedia[]>([]);
   episodeEvents = signal<EpisodeEvent[]>([]);
+
+  expandedEpKey = signal<string | null>(null);
+  expandedVideoKey = signal<string | null>(null);
+  expandedVideoLoading = signal(false);
+  expandedVideoMissing = signal(false);
+
+  safeEpisodeUrl = computed((): SafeResourceUrl | null => {
+    const key = this.expandedVideoKey();
+    if (!key) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${key}?autoplay=1`);
+  });
 
   readonly today = new Date();
   viewDate = signal(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
@@ -171,6 +183,35 @@ export class CalendarPage implements OnInit {
     this.viewDate.set(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
     this.loadReleases(this.tab());
     this.loadWatchlistEpisodes();
+  }
+
+  epKey(ep: EpisodeEvent): string {
+    return `${ep.showId}-${ep.seasonNumber}-${ep.episodeNumber}`;
+  }
+
+  toggleEpisode(ep: EpisodeEvent): void {
+    const key = this.epKey(ep);
+    if (this.expandedEpKey() === key) {
+      this.expandedEpKey.set(null);
+      this.expandedVideoKey.set(null);
+      this.expandedVideoMissing.set(false);
+      return;
+    }
+    this.expandedEpKey.set(key);
+    this.expandedVideoKey.set(null);
+    this.expandedVideoMissing.set(false);
+    this.expandedVideoLoading.set(true);
+    this.tmdb.getEpisodeVideos(ep.showId, ep.seasonNumber, ep.episodeNumber).subscribe({
+      next: (res) => {
+        const v = res.results.find(v => v.site === 'YouTube' && v.type === 'Clip')
+          ?? res.results.find(v => v.site === 'YouTube' && v.type === 'Trailer')
+          ?? res.results.find(v => v.site === 'YouTube');
+        this.expandedVideoKey.set(v?.key ?? null);
+        this.expandedVideoMissing.set(!v);
+        this.expandedVideoLoading.set(false);
+      },
+      error: () => { this.expandedVideoMissing.set(true); this.expandedVideoLoading.set(false); },
+    });
   }
 
   private loadReleases(type: 'movie' | 'tv'): void {
