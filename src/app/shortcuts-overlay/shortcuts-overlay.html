@@ -1,6 +1,6 @@
 @if (open()) {
   <div
-    class="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-4 animate-fade-in"
+    class="fixed inset-0 z-200 bg-black/70 flex items-center justify-center p-4 animate-fade-in"
     (click)="open.set(false)"
   >
     <div
@@ -33,7 +33,6 @@
   </div>
 }
 
-<!-- Hint badge -->
 @if (!open()) {
   <div class="fixed bottom-20 right-6 z-40">
     <button

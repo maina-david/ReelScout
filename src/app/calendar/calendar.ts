@@ -43,7 +43,6 @@ export class CalendarPage implements OnInit {
     const lastDay = new Date(year, month + 1, 0);
 
     const days: CalendarDay[] = [];
-    // Pad start to Monday
     const startPad = (firstDay.getDay() + 6) % 7;
     for (let i = startPad; i > 0; i--) {
       const d = new Date(year, month, 1 - i);
@@ -54,7 +53,6 @@ export class CalendarPage implements OnInit {
       const dateStr = this.toDateStr(date);
       days.push({ date, dateStr, isToday: dateStr === todayStr, items: byDate[dateStr] ?? [] });
     }
-    // Pad end to full weeks
     const endPad = 7 - (days.length % 7);
     if (endPad < 7) {
       for (let i = 1; i <= endPad; i++) {

@@ -29,7 +29,6 @@
       </div>
     } @else {
 
-      <!-- Calendar Grid -->
       <div class="bg-[#1a1a1a] rounded-xl overflow-hidden border border-white/5 mb-10">
         <div class="grid grid-cols-7 border-b border-white/10">
           @for (d of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; track d) {
@@ -66,7 +65,6 @@
         }
       </div>
 
-      <!-- Upcoming List -->
       @if (upcoming().length) {
         <div>
           <h2 class="text-lg font-bold mb-5">Upcoming This Month</h2>

@@ -10,7 +10,6 @@
       <h1 class="text-2xl font-bold">My Watch Stats</h1>
     </div>
 
-    <!-- Summary Cards -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
       <div class="bg-[#1f1f1f] rounded-xl p-4 text-center border border-white/5">
         <p class="text-3xl font-black text-white mb-1">{{ totalWatchlist() }}</p>
@@ -40,7 +39,6 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-      <!-- Watchlist Status -->
       <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5">
         <h2 class="text-base font-bold mb-5">Watchlist Status</h2>
         @if (totalWatchlist()) {
@@ -70,7 +68,6 @@
         }
       </div>
 
-      <!-- Movies vs TV -->
       <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5">
         <h2 class="text-base font-bold mb-5">Content Mix</h2>
         @if (totalWatchlist()) {
@@ -108,7 +105,6 @@
         }
       </div>
 
-      <!-- Star Rating Distribution -->
       <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5">
         <h2 class="text-base font-bold mb-1">Your Ratings</h2>
         @if (totalRated()) {
@@ -140,7 +136,6 @@
         }
       </div>
 
-      <!-- Top Genres -->
       <div class="bg-[#1f1f1f] rounded-xl p-6 border border-white/5 md:col-span-2 xl:col-span-3">
         <h2 class="text-base font-bold mb-5">Favourite Genres</h2>
         @if (topGenres().length) {
