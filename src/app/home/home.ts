@@ -176,7 +176,7 @@ export class Home implements OnInit, OnDestroy {
     this.tmdb.getNowPlaying().subscribe({ next: (res) => this.nowPlaying.set(res.results.slice(0, 10)) });
     this.tmdb.getTrending('tv', 'week').subscribe({ next: (res) => this.newAndPopular.set(res.results.slice(0, 10).map(m => ({ ...m, media_type: 'tv' as const }))) });
     this.tmdb.discoverMedia('movie', { 'vote_average.gte': 7.5, 'vote_count.gte': 50, sort_by: 'vote_average.desc' }).subscribe({
-      next: (res) => this.hiddenGems.set(res.results.filter(m => (m.vote_count ?? 0) <= 3000).slice(0, 10).map(m => ({ ...m, media_type: 'movie' as const }))),
+      next: (res) => this.hiddenGems.set(res.results.slice(0, 10).map(m => ({ ...m, media_type: 'movie' as const }))),
     });
   }
 
