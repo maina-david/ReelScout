@@ -1,0 +1,17 @@
+{
+  "name": "FlixSearch",
+  "short_name": "FlixSearch",
+  "description": "Stream your next obsession — discover movies, TV shows, and more",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#141414",
+  "theme_color": "#e50914",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,0 +1,361 @@
+<div class="min-h-screen bg-[#141414] text-white animate-page-in">
+
+  @if (showTrailer() && trailerKey()) {
+    <div
+      class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+      (click)="closeTrailer()"
+    >
+      <div class="relative w-full max-w-4xl aspect-video" (click)="$event.stopPropagation()">
+        <iframe
+          class="w-full h-full rounded-lg"
+          [src]="safeTrailerUrl()"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+        ></iframe>
+        <button
+          class="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+          (click)="closeTrailer()"
+        >
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (heroLoading()) {
+    <div class="relative h-[70vh] bg-[#1a1a1a] animate-pulse"></div>
+  } @else if (currentHero()) {
+    <div class="relative h-[70vh] overflow-hidden">
+      <img
+        [src]="heroImageUrl(currentHero()!.backdrop_path)"
+        [alt]="heroTitle"
+        class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+      />
+      <div class="absolute inset-0 bg-linear-to-r from-black/90 via-black/50 to-transparent"></div>
+      <div class="absolute inset-0 bg-linear-to-t from-[#141414] via-transparent to-transparent"></div>
+
+      <div class="relative h-full flex flex-col justify-end pb-16 px-6 max-w-3xl">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-xs font-bold uppercase tracking-widest text-[#e50914]">
+            {{ currentHero()!.media_type === 'movie' ? 'Movie' : 'TV Series' }}
+          </span>
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-black mb-3 leading-tight drop-shadow-lg">{{ heroTitle }}</h1>
+        <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 line-clamp-3 max-w-xl">{{ heroOverview }}</p>
+        <div class="flex gap-3 flex-wrap">
+          <button
+            class="bg-[#e50914] hover:bg-[#f40612] text-white font-semibold px-6 py-2.5 rounded-md transition-colors flex items-center gap-2 text-sm"
+            (click)="openTrailer()"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            Watch Trailer
+          </button>
+          <button
+            class="bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-2.5 rounded-md transition-colors text-sm backdrop-blur-sm"
+            (click)="navigateToHero()"
+          >
+            More Info
+          </button>
+          @if (currentHero().media_type !== 'person') {
+            <button
+              class="flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-semibold transition-all duration-200 border backdrop-blur-sm"
+              [class]="heroInWatchlist()
+                ? 'bg-[#e50914]/20 border-[#e50914] text-white'
+                : 'bg-white/10 border-white/40 text-white hover:bg-white/20'"
+              (click)="toggleHeroWatchlist()"
+            >
+              @if (heroInWatchlist()) {
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                In My List
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                My List
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="absolute bottom-4 right-6 flex items-center gap-1.5">
+        <button
+          class="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors mr-1"
+          (click)="prevHero()"
+        >
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        @for (item of heroItems(); track item.id; let i = $index) {
+          <button
+            class="h-1.5 rounded-full transition-all duration-300"
+            [class]="heroIndex() === i ? 'bg-[#e50914] w-6' : 'bg-white/40 hover:bg-white/70 w-1.5'"
+            (click)="selectHero(i)"
+          ></button>
+        }
+        <button
+          class="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors ml-1"
+          (click)="nextHero()"
+        >
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="absolute top-4 right-6 text-xs text-white/50 bg-black/30 rounded px-2 py-1 backdrop-blur-sm hidden sm:block">
+        T — trailer &nbsp; ← → — browse
+      </div>
+    </div>
+  }
+
+  <div class="px-6 pb-16 max-w-screen-2xl mx-auto">
+
+    <div class="py-8">
+      <div class="relative max-w-xl">
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Search movies, shows, people..."
+            class="w-full bg-[#2a2a2a] border border-gray-700 rounded-md pl-10 pr-10 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#e50914] transition-colors"
+            [ngModel]="query()"
+            (ngModelChange)="onQueryChange($event)"
+            (keydown)="onKeydown($event)"
+          />
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          @if (query()) {
+            <button
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+              (click)="clearSearch()"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          }
+        </div>
+
+        @if (showSuggestions() && suggestions().length) {
+          <div class="absolute top-full left-0 right-0 mt-1 bg-[#1f1f1f] border border-gray-700 rounded-md shadow-xl z-30 overflow-hidden">
+            @for (item of suggestions(); track item.id) {
+              <button
+                class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[#2a2a2a] transition-colors text-left"
+                (click)="pickSuggestion(item)"
+              >
+                @if (suggestionPoster(item)) {
+                  <img [src]="suggestionPoster(item)" class="w-8 h-12 object-cover rounded shrink-0" [alt]="suggestionTitle(item)" />
+                } @else {
+                  <div class="w-8 h-12 bg-[#333] rounded shrink-0 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+                    </svg>
+                  </div>
+                }
+                <div class="flex-1 min-w-0">
+                  <p class="text-white text-sm font-medium truncate">{{ suggestionTitle(item) }}</p>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-[10px] uppercase tracking-wide text-[#e50914] font-semibold">
+                      {{ item.media_type === 'movie' ? 'Movie' : item.media_type === 'tv' ? 'TV' : 'Person' }}
+                    </span>
+                    @if (suggestionYear(item)) {
+                      <span class="text-gray-500 text-xs">{{ suggestionYear(item) }}</span>
+                    }
+                  </div>
+                </div>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (searchLoading()) {
+      <div class="flex justify-center py-16">
+        <svg class="animate-spin w-8 h-8 text-[#e50914]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+      </div>
+    } @else if (hasSearched()) {
+
+      <div class="flex flex-wrap gap-2 mb-5">
+        @for (tab of [
+          { id: 'all', label: 'All' },
+          { id: 'movie', label: 'Movies' },
+          { id: 'tv', label: 'TV Shows' },
+          { id: 'person', label: 'People' }
+        ]; track tab.id) {
+          <button
+            class="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200"
+            [class]="searchFilter() === tab.id
+              ? 'bg-[#e50914] border-[#e50914] text-white'
+              : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
+            (click)="searchFilter.set($any(tab.id))"
+          >
+            {{ tab.label }}
+            <span class="ml-1 text-xs opacity-70">
+              ({{ searchFilterCounts()[tab.id] }})
+            </span>
+          </button>
+        }
+      </div>
+
+      @if (filteredResults().length) {
+        <p class="text-gray-400 text-sm mb-4">
+          {{ filteredResults().length }} result{{ filteredResults().length !== 1 ? 's' : '' }} for
+          <span class="text-white font-semibold">"{{ query() }}"</span>
+        </p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
+          @for (item of filteredResults(); track item.id) {
+            <app-media-card [media]="item" />
+          }
+        </div>
+      } @else {
+        <div class="text-center py-16">
+          <svg class="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <p class="text-gray-400 text-lg">No results for "{{ query() }}"</p>
+          <p class="text-gray-600 text-sm mt-1">Try a different title or name</p>
+        </div>
+      }
+
+    } @else {
+
+      @if (sectionsLoading()) {
+        @for (i of [1,2,3]; track i) {
+          <div class="mb-10">
+            <div class="h-5 w-40 bg-[#2a2a2a] rounded animate-pulse mb-4"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
+              @for (j of [1,2,3,4,5,6,7,8,9,10]; track j) {
+                <div class="aspect-2/3 bg-[#2a2a2a] rounded-md animate-pulse"></div>
+              }
+            </div>
+          </div>
+        }
+      } @else {
+        @if (continueWatching().length) {
+          <app-media-shelf [dismissible]="true"
+            title="Continue Watching"
+            [items]="continueWatching()"
+            viewAllLink="/watchlist"
+          />
+        }
+
+        @if (recentlyViewed.items().length) {
+          <div class="mb-10">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold text-white">Recently Viewed</h2>
+              <button
+                class="text-gray-500 hover:text-white text-xs transition-colors"
+                (click)="recentlyViewed.clear()"
+              >
+                Clear all
+              </button>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-2" style="scrollbar-width:none">
+              @for (item of recentlyViewed.items(); track item.id) {
+                <div class="shrink-0 w-36 sm:w-44">
+                  <app-media-card [media]="item" />
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @defer (on viewport) {
+          <div class="mb-2 flex items-center gap-3">
+            <h2 class="text-lg font-bold text-white whitespace-nowrap">Top 10 Trending Today</h2>
+            <div class="flex gap-1.5 overflow-x-auto pb-1 flex-1" style="scrollbar-width:none">
+              @for (c of countries; track c.code) {
+                <button
+                  class="px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap shrink-0 transition-all"
+                  [class]="trendingRegion() === c.code
+                    ? 'bg-[#e50914] border-[#e50914] text-white'
+                    : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
+                  (click)="loadTrending(c.code)"
+                >{{ c.name }}</button>
+              }
+            </div>
+          </div>
+          <div class="mb-10">
+            @if (trendingLoading()) {
+              <div class="flex gap-3 overflow-hidden">
+                @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+                  <div class="shrink-0 w-36 sm:w-44 aspect-2/3 bg-[#2a2a2a] rounded-md animate-pulse"></div>
+                }
+              </div>
+            } @else {
+              <div class="flex gap-3 overflow-x-auto pb-2" style="scrollbar-width:none">
+                @for (item of trendingToday(); track item.id; let i = $index) {
+                  <div class="shrink-0 w-36 sm:w-44 pt-6 relative">
+                    <span
+                      class="absolute top-0 left-1 text-5xl sm:text-6xl font-black leading-none select-none z-10 pointer-events-none"
+                      style="color:transparent; -webkit-text-stroke:2px #4a4a4a;"
+                    >{{ i + 1 }}</span>
+                    <app-media-card [media]="item" [dismissible]="true" />
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @placeholder {
+          <div class="h-80 mb-10"></div>
+        }
+
+        @defer (on viewport) {
+          @if (newAndPopular().length) {
+            <app-media-shelf [dismissible]="true"
+              title="New & Popular on TV"
+              [items]="newAndPopular()"
+              viewAllLink="/tv-shows"
+            />
+          }
+        } @placeholder {
+          <div class="h-80 mb-10"></div>
+        }
+
+        @defer (on viewport) {
+          @if (popularMovies().length) {
+            <app-media-shelf [dismissible]="true"
+              title="Popular Movies"
+              [items]="popularMovies()"
+              viewAllLink="/movies"
+            />
+          }
+        } @placeholder {
+          <div class="h-80 mb-10"></div>
+        }
+
+        @defer (on viewport) {
+          @if (topRatedTv().length) {
+            <app-media-shelf [dismissible]="true"
+              title="Top Rated TV"
+              [items]="topRatedTv()"
+              viewAllLink="/tv-shows"
+            />
+          }
+        } @placeholder {
+          <div class="h-80 mb-10"></div>
+        }
+
+        @defer (on viewport) {
+          @if (nowPlaying().length) {
+            <app-media-shelf [dismissible]="true"
+              title="Now Playing in Cinemas"
+              [items]="nowPlaying()"
+              viewAllLink="/movies"
+            />
+          }
+        } @placeholder {
+          <div class="h-80 mb-10"></div>
+        }
+      }
+    }
+  </div>
+</div>

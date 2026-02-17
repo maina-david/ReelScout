@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "set-env": "node scripts/set-env.js",
+    "start": "npm run set-env -- development && ng serve",
+    "build": "npm run set-env -- production && ng build",
+    "build:staging": "npm run set-env -- staging && ng build --configuration=staging",
+    "build:dev": "npm run set-env -- development && ng build --configuration=development",
     "test": "ng test"
   },
   "prettier": {
@@ -37,6 +39,7 @@
     "@angular/cli": "^21.1.4",
     "@angular/compiler-cli": "^21.1.0",
     "@tailwindcss/postcss": "^4.1.12",
+    "dotenv": "^17.3.1",
     "jsdom": "^27.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.12",

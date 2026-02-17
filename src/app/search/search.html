@@ -1,0 +1,88 @@
+<div class="min-h-screen bg-[#141414] text-white animate-page-in">
+  <div class="max-w-screen-2xl mx-auto px-6 py-10">
+
+    <div class="relative max-w-2xl mb-8">
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input
+        type="text"
+        placeholder="Search movies, shows, people..."
+        class="w-full bg-[#2a2a2a] border border-gray-700 rounded-lg pl-12 pr-12 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#e50914] transition-colors text-base"
+        [ngModel]="query()"
+        (ngModelChange)="onQueryChange($event)"
+        autofocus
+      />
+      @if (query()) {
+        <button
+          class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+          (click)="clearSearch()"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      }
+    </div>
+
+    @if (searchLoading()) {
+      <div class="flex justify-center py-24">
+        <svg class="animate-spin w-10 h-10 text-[#e50914]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+      </div>
+    } @else if (hasSearched()) {
+
+      <div class="flex flex-wrap gap-2 mb-6">
+        @for (tab of [
+          { id: 'all', label: 'All' },
+          { id: 'movie', label: 'Movies' },
+          { id: 'tv', label: 'TV Shows' },
+          { id: 'person', label: 'People' }
+        ]; track tab.id) {
+          <button
+            class="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200"
+            [class]="searchFilter() === tab.id
+              ? 'bg-[#e50914] border-[#e50914] text-white'
+              : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
+            (click)="searchFilter.set($any(tab.id))"
+          >
+            {{ tab.label }}
+            <span class="ml-1 text-xs opacity-70">({{ searchFilterCounts()[tab.id] }})</span>
+          </button>
+        }
+      </div>
+
+      @if (filteredResults().length) {
+        <p class="text-gray-400 text-sm mb-5">
+          {{ filteredResults().length }} result{{ filteredResults().length !== 1 ? 's' : '' }} for
+          <span class="text-white font-semibold">"{{ query() }}"</span>
+        </p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
+          @for (item of filteredResults(); track item.id) {
+            <app-media-card [media]="item" />
+          }
+        </div>
+      } @else {
+        <div class="text-center py-24">
+          <svg class="w-20 h-20 text-gray-700 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <p class="text-gray-400 text-xl mb-2">No results for "{{ query() }}"</p>
+          <p class="text-gray-600 text-sm">Try a different title, actor, or genre</p>
+        </div>
+      }
+
+    } @else {
+      <div class="text-center py-24">
+        <svg class="w-20 h-20 text-gray-700 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <p class="text-gray-500 text-lg">Search for movies, shows, and people</p>
+        <p class="text-gray-700 text-sm mt-1">Start typing to see results</p>
+      </div>
+    }
+
+  </div>
+</div>

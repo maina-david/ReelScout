@@ -1,0 +1,32 @@
+<div class="fixed bottom-6 left-6 z-100 flex flex-col gap-2 pointer-events-none">
+  @for (toast of service.toasts(); track toast.id) {
+    <div
+      class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl text-sm font-medium min-w-60 max-w-xs animate-slide-up"
+      [class]="
+        toast.type === 'success' ? 'bg-green-900 text-green-100 border border-green-700' :
+        toast.type === 'error'   ? 'bg-red-950 text-red-100 border border-red-800' :
+                                   'bg-[#2a2a2a] text-white border border-gray-700'
+      "
+    >
+      @if (toast.type === 'success') {
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      } @else if (toast.type === 'error') {
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      } @else {
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      }
+      <span class="flex-1">{{ toast.message }}</span>
+      <button class="opacity-60 hover:opacity-100 transition-opacity shrink-0" (click)="service.dismiss(toast.id)">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  }
+</div>

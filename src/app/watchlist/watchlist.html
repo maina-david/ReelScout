@@ -1,0 +1,88 @@
+<div class="min-h-screen bg-[#141414] text-white animate-page-in">
+  <div class="max-w-screen-2xl mx-auto px-6 py-10">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold">My Watchlist</h1>
+        @if (watchlist.items().length) {
+          <span class="text-gray-500 text-sm">{{ watchlist.items().length }} title{{ watchlist.items().length !== 1 ? 's' : '' }}</span>
+        }
+      </div>
+
+      @if (watchlist.items().length > 1) {
+        <select
+          [value]="sortBy()"
+          (change)="sortBy.set($any($event.target).value)"
+          class="bg-[#1f1f1f] border border-gray-700 text-gray-300 text-sm rounded-md px-3 py-2 focus:outline-none focus:border-[#e50914] transition-colors"
+        >
+          @for (opt of sortOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      }
+    </div>
+
+    @if (watchlist.items().length) {
+      <div class="flex gap-2 mb-8 overflow-x-auto pb-1" style="scrollbar-width:none">
+        @for (tab of tabs; track tab.id) {
+          <button
+            class="px-5 py-2 rounded-full text-sm font-medium border whitespace-nowrap shrink-0 transition-all duration-200"
+            [class]="activeTab() === tab.id
+              ? 'bg-[#e50914] border-[#e50914] text-white scale-105'
+              : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
+            (click)="activeTab.set(tab.id)"
+          >
+            {{ tab.label }}
+            <span class="ml-1.5 text-xs opacity-70">({{ tabCount(tab.id) }})</span>
+          </button>
+        }
+      </div>
+
+      @if (filteredItems().length) {
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-4">
+          @for (item of filteredItems(); track item.id) {
+            <div>
+              <app-media-card [media]="item" />
+              <div class="mt-2 flex gap-1">
+                <select
+                  class="flex-1 bg-[#1f1f1f] border border-gray-700 text-gray-400 text-xs rounded px-2 py-1 focus:outline-none focus:border-[#e50914] transition-colors"
+                  [value]="item.watchlistCategory"
+                  (change)="moveToCategory(item.id, $any($event.target).value)"
+                >
+                  <option value="want">Want to Watch</option>
+                  <option value="watching">Watching</option>
+                  <option value="watched">Watched</option>
+                </select>
+                <button
+                  class="px-2 py-1 bg-[#1f1f1f] border border-gray-700 rounded text-gray-500 hover:text-[#e50914] hover:border-[#e50914] transition-colors"
+                  (click)="remove(item.id)"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="text-center py-16">
+          <p class="text-gray-400 text-lg mb-1">No titles in this list</p>
+          <p class="text-gray-600 text-sm">Move items from other lists here</p>
+        </div>
+      }
+
+    } @else {
+      <div class="text-center py-24">
+        <svg class="w-20 h-20 text-gray-700 mx-auto mb-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <p class="text-gray-400 text-lg mb-2">Your watchlist is empty</p>
+        <p class="text-gray-600 text-sm mb-6">Add movies and shows by clicking the heart icon on any card</p>
+        <a routerLink="/" class="bg-[#e50914] hover:bg-[#f40612] text-white font-semibold px-6 py-3 rounded-md transition-colors">
+          Browse Content
+        </a>
+      </div>
+    }
+  </div>
+</div>

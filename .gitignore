@@ -42,3 +42,10 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+.env.*
+src/environments/environment.ts
+src/environments/environment.staging.ts
+src/environments/environment.production.ts

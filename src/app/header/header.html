@@ -1,0 +1,115 @@
+<header class="bg-black/80 backdrop-blur-sm sticky top-0 z-50 px-6 py-4 flex items-center gap-6">
+  <a routerLink="/" class="flex items-center gap-2 shrink-0">
+    <svg class="w-7 h-7 text-[#e50914]" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M4 3l4 9-4 9h2.5l2.75-6.25L11.5 21H14l-4-9 4-9h-2.5l-2.75 6.25L6.5 3H4z"/>
+    </svg>
+    <span class="text-[#e50914] font-black text-xl tracking-tight hidden sm:block">FLIXSEARCH</span>
+  </a>
+
+  @if (!searchOpen()) {
+    <nav class="flex items-center gap-1 ml-2 overflow-x-auto flex-1" style="scrollbar-width:none;">
+      <a
+        routerLink="/"
+        routerLinkActive="text-white"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap"
+      >
+        Home
+      </a>
+      <a
+        routerLink="/movies"
+        routerLinkActive="text-white"
+        class="px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap"
+      >
+        Movies
+      </a>
+      <a
+        routerLink="/tv-shows"
+        routerLinkActive="text-white"
+        class="px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap"
+      >
+        TV Shows
+      </a>
+      <a
+        routerLink="/genre"
+        routerLinkActive="text-white"
+        class="px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors whitespace-nowrap"
+      >
+        Genres
+      </a>
+      <a
+        routerLink="/watchlist"
+        routerLinkActive="text-white"
+        class="relative px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-1.5 whitespace-nowrap"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        Watchlist
+        @if (watchlistCount() > 0) {
+          <span class="bg-[#e50914] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center leading-none">
+            {{ watchlistCount() > 9 ? '9+' : watchlistCount() }}
+          </span>
+        }
+      </a>
+      <a
+        routerLink="/stats"
+        routerLinkActive="text-white"
+        class="px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-1.5 whitespace-nowrap"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Stats
+      </a>
+      <a
+        routerLink="/calendar"
+        routerLinkActive="text-white"
+        class="px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:text-white transition-colors flex items-center gap-1.5 whitespace-nowrap"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Calendar
+      </a>
+    </nav>
+
+    <button
+      class="ml-auto shrink-0 text-gray-400 hover:text-white transition-colors p-1.5 rounded hover:bg-white/10"
+      (click)="openSearch()"
+      title="Search (press /)"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </button>
+  } @else {
+    <div class="flex items-center gap-3 flex-1 border-b border-gray-600 pb-1">
+      <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input
+        type="text"
+        placeholder="Search movies, shows, people..."
+        class="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        (keydown.enter)="submitSearch()"
+        autofocus
+      />
+      @if (searchQuery()) {
+        <button class="text-gray-500 hover:text-white transition-colors" (click)="searchQuery.set('')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      }
+      <button
+        class="text-gray-500 hover:text-white transition-colors text-xs border border-gray-700 rounded px-1.5 py-0.5 shrink-0"
+        (click)="closeSearch()"
+      >
+        ESC
+      </button>
+    </div>
+  }
+</header>
