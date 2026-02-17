@@ -191,6 +191,10 @@ export interface DiscoverParams {
   'first_air_date_year'?: number;
   'vote_average.gte'?: number;
   'vote_count.gte'?: number;
+  'primary_release_date.gte'?: string;
+  'primary_release_date.lte'?: string;
+  'first_air_date.gte'?: string;
+  'first_air_date.lte'?: string;
   with_genres?: number;
   page?: number;
 }

@@ -4,19 +4,69 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
       <div>
         <h1 class="text-2xl font-bold">Release Calendar</h1>
-        <p class="text-gray-500 text-sm mt-0.5">{{ monthLabel }}</p>
+        <div class="flex items-center gap-2 mt-1.5">
+          <button
+            class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            (click)="prevMonth()"
+            title="Previous month"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <span class="text-gray-300 font-semibold text-sm min-w-36 text-center">{{ monthLabel() }}</span>
+          <button
+            class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+            (click)="nextMonth()"
+            title="Next month"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+          @if (!isCurrentViewMonth()) {
+            <button
+              class="ml-1 px-3 py-1 rounded-full text-xs font-semibold border border-gray-700 text-gray-400 hover:text-white hover:border-gray-400 transition-colors"
+              (click)="goToToday()"
+            >Today</button>
+          }
+        </div>
       </div>
-      <div class="flex gap-2">
-        <button
-          class="px-5 py-2 rounded-full text-sm font-medium border transition-all"
-          [class]="tab() === 'movie' ? 'bg-[#e50914] border-[#e50914] text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
-          (click)="switchTab('movie')"
-        >Movies</button>
-        <button
-          class="px-5 py-2 rounded-full text-sm font-medium border transition-all"
-          [class]="tab() === 'tv' ? 'bg-[#e50914] border-[#e50914] text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
-          (click)="switchTab('tv')"
-        >TV Shows</button>
+      <div class="flex items-center gap-3">
+        <div class="flex gap-2">
+          <button
+            class="px-5 py-2 rounded-full text-sm font-medium border transition-all"
+            [class]="tab() === 'movie' ? 'bg-[#e50914] border-[#e50914] text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
+            (click)="switchTab('movie')"
+          >Movies</button>
+          <button
+            class="px-5 py-2 rounded-full text-sm font-medium border transition-all"
+            [class]="tab() === 'tv' ? 'bg-[#e50914] border-[#e50914] text-white' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-400 hover:text-white'"
+            (click)="switchTab('tv')"
+          >TV Shows</button>
+        </div>
+        <div class="flex border border-gray-700 rounded-lg overflow-hidden">
+          <button
+            class="p-2 transition-colors"
+            [class]="viewMode() === 'calendar' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'"
+            (click)="viewMode.set('calendar')"
+            title="Calendar view"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </button>
+          <button
+            class="p-2 transition-colors border-l border-gray-700"
+            [class]="viewMode() === 'list' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'"
+            (click)="viewMode.set('list')"
+            title="List view"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -27,7 +77,7 @@
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
         </svg>
       </div>
-    } @else {
+    } @else if (viewMode() === 'calendar') {
 
       <div class="bg-[#1a1a1a] rounded-xl overflow-hidden border border-white/5 mb-10">
         <div class="grid grid-cols-7 border-b border-white/10">
@@ -101,6 +151,53 @@
               </a>
             }
           </div>
+        </div>
+      }
+
+    } @else {
+
+      @if (listItems().length === 0) {
+        <div class="text-center py-16">
+          <p class="text-gray-400 text-lg">No releases this month.</p>
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (item of listItems(); track item.id) {
+            <a
+              [routerLink]="['/' + item.media_type, item.id]"
+              class="flex items-center gap-4 p-3 bg-[#1a1a1a] hover:bg-[#222] rounded-lg border border-white/5 hover:border-[#e50914]/30 transition-colors group"
+            >
+              @if (item.poster_path) {
+                <img
+                  [src]="'https://image.tmdb.org/t/p/w185' + item.poster_path"
+                  [alt]="item.title ?? item.name"
+                  class="w-10 h-14 object-cover rounded shrink-0"
+                />
+              } @else {
+                <div class="w-10 h-14 bg-[#2a2a2a] rounded shrink-0 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+                  </svg>
+                </div>
+              }
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold truncate group-hover:text-[#e50914] transition-colors">{{ item.title ?? item.name }}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-[10px] uppercase font-bold tracking-wider text-[#e50914]">{{ item.media_type === 'movie' ? 'Movie' : 'TV' }}</span>
+                  @if (item.vote_average > 0) {
+                    <span class="text-gray-500 text-xs">★ {{ item.vote_average.toFixed(1) }}</span>
+                  }
+                </div>
+              </div>
+              <div class="shrink-0 text-right">
+                <p class="text-gray-300 text-sm font-medium">{{ (item.release_date ?? item.first_air_date ?? '').slice(8, 10) }} {{ monthAbbr((item.release_date ?? item.first_air_date ?? '').slice(5, 7)) }}</p>
+                <p class="text-gray-600 text-xs">{{ (item.release_date ?? item.first_air_date ?? '').slice(0, 4) }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-400 shrink-0 transition-colors ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          }
         </div>
       }
 
