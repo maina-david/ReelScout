@@ -1,9 +1,16 @@
 <header class="bg-black/80 backdrop-blur-sm sticky top-0 z-50 px-6 py-4 flex items-center gap-6">
   <a routerLink="/" class="flex items-center gap-2 shrink-0">
-    <svg class="w-7 h-7 text-[#e50914]" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M4 3l4 9-4 9h2.5l2.75-6.25L11.5 21H14l-4-9 4-9h-2.5l-2.75 6.25L6.5 3H4z"/>
+    <svg class="h-7 text-[#e50914]" viewBox="0 0 38 26" fill="currentColor" aria-label="ReelScout">
+      <text
+        x="1" y="21"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-style="italic"
+        font-weight="900"
+        font-size="24"
+        letter-spacing="-1"
+      >RS</text>
     </svg>
-    <span class="text-[#e50914] font-black text-xl tracking-tight hidden sm:block">FLIXSEARCH</span>
+    <span class="text-[#e50914] font-black text-xl tracking-tight hidden sm:block">ReelScout</span>
   </a>
 
   @if (!searchOpen()) {

@@ -66,7 +66,7 @@ export class GenrePage implements OnInit, AfterViewInit, OnDestroy {
           this.mediaFilter.set(filter);
           const match = genreId ? combined.find(g => g.id === genreId) ?? combined[0] : combined[0];
           this.activeGenre.set(match);
-          this.titleService.setTitle(`${match.name} | FlixSearch`);
+          this.titleService.setTitle(`${match.name} | ReelScout`);
           this.fetchPage(match.id, filter, 1, true);
         });
       },

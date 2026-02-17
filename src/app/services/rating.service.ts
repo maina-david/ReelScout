@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class RatingService {
-  private readonly KEY = 'flixsearch_ratings';
+  private readonly KEY = 'ReelScout_ratings';
   private _ratings = signal<Record<number, number>>(this.load());
   ratings = this._ratings.asReadonly();
 
@@ -13,14 +13,14 @@ export class RatingService {
   setRating(id: number, stars: number): void {
     const updated = { ...this._ratings(), [id]: stars };
     this._ratings.set(updated);
-    try { localStorage.setItem(this.KEY, JSON.stringify(updated)); } catch {}
+    try { localStorage.setItem(this.KEY, JSON.stringify(updated)); } catch { }
   }
 
   clearRating(id: number): void {
     const updated = { ...this._ratings() };
     delete updated[id];
     this._ratings.set(updated);
-    try { localStorage.setItem(this.KEY, JSON.stringify(updated)); } catch {}
+    try { localStorage.setItem(this.KEY, JSON.stringify(updated)); } catch { }
   }
 
   private load(): Record<number, number> {

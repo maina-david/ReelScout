@@ -19,7 +19,7 @@ export class CalendarPage implements OnInit {
   private tmdb = inject(TmdbService);
 
   constructor() {
-    inject(Title).setTitle('Release Calendar | FlixSearch');
+    inject(Title).setTitle('Release Calendar | ReelScout');
   }
 
   loading = signal(true);
@@ -123,7 +123,7 @@ export class CalendarPage implements OnInit {
   }
 
   monthAbbr(mm: string): string {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[parseInt(mm, 10) - 1] ?? '';
   }
 }

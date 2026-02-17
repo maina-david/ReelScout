@@ -61,7 +61,7 @@ export class PersonDetail implements OnInit {
     this.tmdb.getPersonDetails(numId).subscribe({
       next: (res) => {
         this.person.set(res);
-        this.titleService.setTitle(`${res.name} | FlixSearch`);
+        this.titleService.setTitle(`${res.name} | ReelScout`);
         this.loading.set(false);
       },
       error: () => {

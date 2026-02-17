@@ -4,7 +4,7 @@ import { ToastService } from './toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class WatchlistService {
-  private readonly KEY = 'flixsearch_watchlist';
+  private readonly KEY = 'ReelScout_watchlist';
   private toast = inject(ToastService);
 
   private _items = signal<WatchlistItem[]>(this.load());
@@ -47,7 +47,7 @@ export class WatchlistService {
   }
 
   private persist(items: WatchlistItem[]): void {
-    try { localStorage.setItem(this.KEY, JSON.stringify(items)); } catch {}
+    try { localStorage.setItem(this.KEY, JSON.stringify(items)); } catch { }
   }
 
   private load(): WatchlistItem[] {

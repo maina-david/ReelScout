@@ -91,7 +91,7 @@ export class TvDetail implements OnInit {
     this.tmdb.getTvDetails(Number(id)).subscribe({
       next: (res) => {
         this.show.set(res);
-        this.titleService.setTitle(`${res.name} | FlixSearch`);
+        this.titleService.setTitle(`${res.name} | ReelScout`);
         this.loading.set(false);
         this.loadSeasons(Number(id), res);
         this.recentlyViewed.add({
@@ -233,7 +233,7 @@ export class TvDetail implements OnInit {
     const s = this.show();
     if (!s) return;
     if (navigator.share) {
-      navigator.share({ title: s.name, text: s.overview, url: window.location.href }).catch(() => {});
+      navigator.share({ title: s.name, text: s.overview, url: window.location.href }).catch(() => { });
     } else {
       navigator.clipboard.writeText(window.location.href).then(() => {
         this.toast.show('Link copied to clipboard', 'info');

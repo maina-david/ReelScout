@@ -66,6 +66,6 @@ export class Watchlist {
   }
 
   constructor() {
-    this.titleService.setTitle('My Watchlist | FlixSearch');
+    this.titleService.setTitle('My Watchlist | ReelScout');
   }
 }

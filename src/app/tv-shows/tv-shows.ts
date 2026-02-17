@@ -39,7 +39,7 @@ export class TvShows implements OnInit, AfterViewInit, OnDestroy {
   private hasMore_ = computed(() => this.shows().length < this.totalResults());
 
   ngOnInit(): void {
-    this.titleService.setTitle('TV Shows | FlixSearch');
+    this.titleService.setTitle('TV Shows | ReelScout');
     this.route.queryParams.subscribe(params => {
       const tab = (params['tab'] as TvTab) ?? 'popular';
       this.activeTab.set(tab);
@@ -68,8 +68,8 @@ export class TvShows implements OnInit, AfterViewInit, OnDestroy {
 
     const req$ = tab === 'on_air' ? this.tmdb.getTvOnAir(page)
       : tab === 'airing_today' ? this.tmdb.getTvAiringToday(page)
-      : tab === 'top_rated' ? this.tmdb.getTopRated('tv', page)
-      : this.tmdb.getPopular('tv', page);
+        : tab === 'top_rated' ? this.tmdb.getTopRated('tv', page)
+          : this.tmdb.getPopular('tv', page);
 
     req$.subscribe({
       next: (res) => {

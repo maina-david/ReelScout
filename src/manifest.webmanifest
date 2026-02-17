@@ -1,6 +1,6 @@
 {
-  "name": "FlixSearch",
-  "short_name": "FlixSearch",
+  "name": "ReelScout",
+  "short_name": "ReelScout",
   "description": "Stream your next obsession — discover movies, TV shows, and more",
   "start_url": "/",
   "display": "standalone",

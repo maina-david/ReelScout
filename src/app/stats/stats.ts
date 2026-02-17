@@ -16,7 +16,7 @@ export class Stats {
   readonly ratingService = inject(RatingService);
 
   constructor() {
-    inject(Title).setTitle('My Stats | FlixSearch');
+    inject(Title).setTitle('My Stats | ReelScout');
   }
 
   totalWatchlist = computed(() => this.watchlist.items().length);

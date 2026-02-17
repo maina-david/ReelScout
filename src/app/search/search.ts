@@ -49,7 +49,7 @@ export class SearchPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.titleService.setTitle('Search | FlixSearch');
+    this.titleService.setTitle('Search | ReelScout');
 
     this.searchQuery$.pipe(debounceTime(300), takeUntilDestroyed(this.destroyRef)).subscribe(q => {
       if (q.length >= 2) this.runSearch(q);
@@ -73,7 +73,7 @@ export class SearchPage implements OnInit {
     if (!q) return;
     this.searchLoading.set(true);
     this.hasSearched.set(true);
-    this.titleService.setTitle(`"${q}" — FlixSearch`);
+    this.titleService.setTitle(`"${q}" — ReelScout`);
     this.tmdb.searchMulti(q).subscribe({
       next: (res) => { this.searchResults.set(res.results); this.searchLoading.set(false); },
       error: () => { this.toast.show('Search failed.', 'error'); this.searchLoading.set(false); },
@@ -84,7 +84,7 @@ export class SearchPage implements OnInit {
     this.query.set('');
     this.searchResults.set([]);
     this.hasSearched.set(false);
-    this.titleService.setTitle('Search | FlixSearch');
+    this.titleService.setTitle('Search | ReelScout');
     this.router.navigate(['/search'], { replaceUrl: true });
   }
 }

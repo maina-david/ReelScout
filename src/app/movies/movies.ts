@@ -39,7 +39,7 @@ export class Movies implements OnInit, AfterViewInit, OnDestroy {
   hasMore = computed(() => this.movies().length < this.totalResults());
 
   ngOnInit(): void {
-    this.titleService.setTitle('Movies | FlixSearch');
+    this.titleService.setTitle('Movies | ReelScout');
     this.route.queryParams.subscribe(params => {
       const tab = (params['tab'] as MovieTab) ?? 'popular';
       this.activeTab.set(tab);
@@ -68,8 +68,8 @@ export class Movies implements OnInit, AfterViewInit, OnDestroy {
 
     const req$ = tab === 'now_playing' ? this.tmdb.getNowPlaying(page)
       : tab === 'upcoming' ? this.tmdb.getUpcoming(page)
-      : tab === 'top_rated' ? this.tmdb.getTopRated('movie', page)
-      : this.tmdb.getPopular('movie', page);
+        : tab === 'top_rated' ? this.tmdb.getTopRated('movie', page)
+          : this.tmdb.getPopular('movie', page);
 
     req$.subscribe({
       next: (res) => {

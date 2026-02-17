@@ -107,7 +107,7 @@ export class Home implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.titleService.setTitle('FlixSearch — Stream Your Next Obsession');
+    this.titleService.setTitle('ReelScout — Stream Your Next Obsession');
 
     this.searchQuery$.pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       const q = this.query().trim();

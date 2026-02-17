@@ -30,7 +30,7 @@ export class Collection implements OnInit {
         const parts = res.parts.map(p => ({ ...p, media_type: 'movie' as const }))
           .sort((a, b) => (a.release_date ?? '').localeCompare(b.release_date ?? ''));
         this.collection.set({ ...res, parts });
-        this.titleService.setTitle(`${res.name} | FlixSearch`);
+        this.titleService.setTitle(`${res.name} | ReelScout`);
         this.loading.set(false);
       },
       error: () => {

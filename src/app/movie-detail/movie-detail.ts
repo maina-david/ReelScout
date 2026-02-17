@@ -76,7 +76,7 @@ export class MovieDetail implements OnInit {
     this.tmdb.getMovieDetails(Number(id)).subscribe({
       next: (res) => {
         this.movie.set(res);
-        this.titleService.setTitle(`${res.title} | FlixSearch`);
+        this.titleService.setTitle(`${res.title} | ReelScout`);
         this.loading.set(false);
         this.recentlyViewed.add({
           id: res.id, title: res.title, poster_path: res.poster_path,
@@ -195,7 +195,7 @@ export class MovieDetail implements OnInit {
     const m = this.movie();
     if (!m) return;
     if (navigator.share) {
-      navigator.share({ title: m.title, text: m.overview, url: window.location.href }).catch(() => {});
+      navigator.share({ title: m.title, text: m.overview, url: window.location.href }).catch(() => { });
     } else {
       navigator.clipboard.writeText(window.location.href).then(() => {
         this.toast.show('Link copied to clipboard', 'info');

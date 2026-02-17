@@ -3,7 +3,7 @@ import { TmdbMedia } from '../models/tmdb.model';
 
 @Injectable({ providedIn: 'root' })
 export class RecentlyViewedService {
-  private readonly KEY = 'flixsearch_recently_viewed';
+  private readonly KEY = 'ReelScout_recently_viewed';
   private readonly MAX = 12;
 
   items = signal<TmdbMedia[]>(this.load());

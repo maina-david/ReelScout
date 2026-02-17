@@ -3,7 +3,7 @@ import { TmdbSeason } from '../models/tmdb.model';
 
 @Injectable({ providedIn: 'root' })
 export class EpisodeProgressService {
-  private readonly KEY = 'flixsearch_progress';
+  private readonly KEY = 'ReelScout_progress';
   private _watched = signal<Set<string>>(this.load());
 
   isWatched(tvId: number, season: number, episode: number): boolean {
@@ -24,14 +24,14 @@ export class EpisodeProgressService {
     const next = new Set(this._watched());
     next.has(k) ? next.delete(k) : next.add(k);
     this._watched.set(next);
-    try { localStorage.setItem(this.KEY, JSON.stringify([...next])); } catch {}
+    try { localStorage.setItem(this.KEY, JSON.stringify([...next])); } catch { }
   }
 
   markSeasonWatched(tvId: number, season: TmdbSeason): void {
     const next = new Set(this._watched());
     season.episodes.forEach(ep => next.add(this.key(tvId, season.season_number, ep.episode_number)));
     this._watched.set(next);
-    try { localStorage.setItem(this.KEY, JSON.stringify([...next])); } catch {}
+    try { localStorage.setItem(this.KEY, JSON.stringify([...next])); } catch { }
   }
 
   watchedSignal = computed(() => this._watched());
