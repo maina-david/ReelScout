@@ -351,7 +351,7 @@
                   <div
                     class="flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer"
                     [class]="selectedEpisodeId() === ep.id ? 'bg-[#2a2a2a]' : 'bg-[#1f1f1f] hover:bg-[#2a2a2a]'"
-                    (click)="toggleEpisode(ep.id)"
+                    (click)="toggleEpisode(ep)"
                   >
                     <button
                       class="w-5 h-5 rounded border shrink-0 flex items-center justify-center transition-colors"
@@ -388,15 +388,29 @@
 
                   @if (selectedEpisodeId() === ep.id) {
                     <div class="bg-[#242424] border-t border-gray-700/50 px-4 py-4">
+                      @if (episodeVideoLoading()) {
+                        <div class="flex items-center justify-center py-6">
+                          <svg class="animate-spin w-6 h-6 text-[#e50914]" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                          </svg>
+                        </div>
+                      } @else if (safeEpisodeUrl()) {
+                        <div class="w-full rounded-lg overflow-hidden mb-4" style="aspect-ratio:16/9">
+                          <iframe class="w-full h-full" [src]="safeEpisodeUrl()" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                      }
                       <div class="flex flex-col sm:flex-row gap-4">
-                        @if (stillUrl(ep.still_path)) {
-                          <img [src]="stillUrl(ep.still_path)" [alt]="ep.name" class="w-full sm:w-40 rounded shrink-0 object-cover" style="aspect-ratio:16/9" loading="lazy"/>
-                        } @else {
-                          <div class="w-full sm:w-40 rounded bg-[#1a1a1a] shrink-0 flex items-center justify-center" style="aspect-ratio:16/9">
-                            <svg class="w-8 h-8 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2z"/>
-                            </svg>
-                          </div>
+                        @if (!safeEpisodeUrl() && !episodeVideoLoading()) {
+                          @if (stillUrl(ep.still_path)) {
+                            <img [src]="stillUrl(ep.still_path)" [alt]="ep.name" class="w-full sm:w-40 rounded shrink-0 object-cover" style="aspect-ratio:16/9" loading="lazy"/>
+                          } @else {
+                            <div class="w-full sm:w-40 rounded bg-[#1a1a1a] shrink-0 flex items-center justify-center" style="aspect-ratio:16/9">
+                              <svg class="w-8 h-8 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2z"/>
+                              </svg>
+                            </div>
+                          }
                         }
                         <div class="flex-1 text-sm space-y-2">
                           @if (ep.overview) {
@@ -408,6 +422,9 @@
                             }
                             @if (ep.air_date) {
                               <span>{{ ep.air_date }}</span>
+                            }
+                            @if (episodeVideoMissing()) {
+                              <span class="text-gray-600 italic">No clip available</span>
                             }
                           </div>
                         </div>

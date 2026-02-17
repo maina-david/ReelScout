@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 import { MediaCard } from '../media-card/media-card';
 import { MediaShelf } from '../media-shelf/media-shelf';
-import { TmdbCastMember, TmdbImageFile, TmdbKeyword, TmdbMedia, TmdbReview, TmdbSeason, TmdbTv, TmdbVideo, WatchProvider } from '../models/tmdb.model';
+import { TmdbCastMember, TmdbEpisode, TmdbImageFile, TmdbKeyword, TmdbMedia, TmdbReview, TmdbSeason, TmdbTv, TmdbVideo, WatchProvider } from '../models/tmdb.model';
 import { EpisodeProgressService } from '../services/episode-progress.service';
 import { RecentlyViewedService } from '../services/recently-viewed.service';
 import { TmdbService } from '../services/tmdb.service';
@@ -43,6 +43,10 @@ export class TvDetail implements OnInit {
   selectedTrailerIndex = signal(0);
   showMoreModal = signal(false);
 
+  episodeVideoKey = signal<string | null>(null);
+  episodeVideoLoading = signal(false);
+  episodeVideoMissing = signal(false);
+
   inWatchlist = computed(() => {
     const s = this.show();
     if (!s) return false;
@@ -51,6 +55,14 @@ export class TvDetail implements OnInit {
 
   safeTrailerUrl = computed((): SafeResourceUrl | null => {
     const key = this.trailerKey();
+    if (!key) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://www.youtube.com/embed/${key}?autoplay=1`
+    );
+  });
+
+  safeEpisodeUrl = computed((): SafeResourceUrl | null => {
+    const key = this.episodeVideoKey();
     if (!key) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(
       `https://www.youtube.com/embed/${key}?autoplay=1`
@@ -168,8 +180,30 @@ export class TvDetail implements OnInit {
     this.selectedEpisodeId.set(null);
   }
 
-  toggleEpisode(id: number): void {
-    this.selectedEpisodeId.set(this.selectedEpisodeId() === id ? null : id);
+  toggleEpisode(ep: TmdbEpisode): void {
+    if (this.selectedEpisodeId() === ep.id) {
+      this.selectedEpisodeId.set(null);
+      this.episodeVideoKey.set(null);
+      this.episodeVideoMissing.set(false);
+      return;
+    }
+    this.selectedEpisodeId.set(ep.id);
+    this.episodeVideoKey.set(null);
+    this.episodeVideoMissing.set(false);
+    const showId = this.show()?.id;
+    if (!showId) return;
+    this.episodeVideoLoading.set(true);
+    this.tmdb.getEpisodeVideos(showId, ep.season_number, ep.episode_number).subscribe({
+      next: (res) => {
+        const v = res.results.find(v => v.site === 'YouTube' && v.type === 'Clip')
+          ?? res.results.find(v => v.site === 'YouTube' && v.type === 'Trailer')
+          ?? res.results.find(v => v.site === 'YouTube');
+        this.episodeVideoKey.set(v?.key ?? null);
+        this.episodeVideoMissing.set(!v);
+        this.episodeVideoLoading.set(false);
+      },
+      error: () => { this.episodeVideoMissing.set(true); this.episodeVideoLoading.set(false); },
+    });
   }
 
   posterUrl(): string {
