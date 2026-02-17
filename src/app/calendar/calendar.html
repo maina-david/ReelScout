@@ -106,7 +106,18 @@
                     <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#e50914] mr-1 align-middle"></span>{{ item.title ?? item.name }}
                   </a>
                 }
-                @if (day.items.length > 2) {
+                @for (ep of day.episodes.slice(0, 2); track ep.episodeNumber) {
+                  <a
+                    [routerLink]="['/tv', ep.showId]"
+                    class="block text-[10px] leading-tight text-blue-400 hover:text-blue-300 transition-colors truncate mb-0.5 px-0.5"
+                    [title]="ep.showName + ' S' + ep.seasonNumber + 'E' + ep.episodeNumber + ' — ' + ep.episodeName"
+                  >
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 mr-1 align-middle"></span>{{ ep.showName }}
+                  </a>
+                }
+                @if ((day.items.length + day.episodes.length) > 4) {
+                  <span class="text-[9px] text-gray-600">+{{ (day.items.length + day.episodes.length) - 4 }} more</span>
+                } @else if (day.items.length > 2 && day.episodes.length === 0) {
                   <span class="text-[9px] text-gray-600">+{{ day.items.length - 2 }} more</span>
                 }
               </div>
@@ -154,9 +165,47 @@
         </div>
       }
 
+      @if (upcomingEpisodes().length) {
+        <div class="mt-10">
+          <div class="flex items-center gap-2 mb-5">
+            <span class="inline-block w-2 h-2 rounded-full bg-blue-400"></span>
+            <h2 class="text-lg font-bold">Upcoming Episodes</h2>
+            <span class="text-gray-600 text-sm">(from your watchlist)</span>
+          </div>
+          <div class="space-y-3">
+            @for (ep of upcomingEpisodes(); track ep.showId + '-' + ep.seasonNumber + '-' + ep.episodeNumber) {
+              <a
+                [routerLink]="['/tv', ep.showId]"
+                class="flex items-center gap-4 p-3 bg-[#1f1f1f] hover:bg-[#2a2a2a] rounded-lg transition-colors group border border-white/5 hover:border-blue-500/30"
+              >
+                <div class="shrink-0 text-center w-12">
+                  <p class="text-blue-400 font-black text-xl leading-none">{{ ep.airDate.slice(8, 10) }}</p>
+                  <p class="text-gray-500 text-[10px] uppercase">{{ monthAbbr(ep.airDate.slice(5, 7)) }}</p>
+                </div>
+                <div class="w-px h-10 bg-gray-700 shrink-0"></div>
+                @if (ep.showPoster) {
+                  <img
+                    [src]="'https://image.tmdb.org/t/p/w185' + ep.showPoster"
+                    [alt]="ep.showName"
+                    class="w-10 h-14 object-cover rounded shrink-0"
+                  />
+                }
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-semibold truncate group-hover:text-blue-400 transition-colors">{{ ep.showName }}</p>
+                  <p class="text-gray-400 text-xs truncate mt-0.5">S{{ ep.seasonNumber }} E{{ ep.episodeNumber }} — {{ ep.episodeName }}</p>
+                </div>
+                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-400 shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
     } @else {
 
-      @if (listItems().length === 0) {
+      @if (listItems().length === 0 && episodeEvents().length === 0) {
         <div class="text-center py-16">
           <p class="text-gray-400 text-lg">No releases this month.</p>
         </div>
@@ -192,6 +241,34 @@
               <div class="shrink-0 text-right">
                 <p class="text-gray-300 text-sm font-medium">{{ (item.release_date ?? item.first_air_date ?? '').slice(8, 10) }} {{ monthAbbr((item.release_date ?? item.first_air_date ?? '').slice(5, 7)) }}</p>
                 <p class="text-gray-600 text-xs">{{ (item.release_date ?? item.first_air_date ?? '').slice(0, 4) }}</p>
+              </div>
+              <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-400 shrink-0 transition-colors ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          }
+          @for (ep of episodeEvents(); track ep.showId + '-' + ep.seasonNumber + '-' + ep.episodeNumber) {
+            <a
+              [routerLink]="['/tv', ep.showId]"
+              class="flex items-center gap-4 p-3 bg-[#1a1a1a] hover:bg-[#222] rounded-lg border border-white/5 hover:border-blue-500/30 transition-colors group"
+            >
+              @if (ep.showPoster) {
+                <img
+                  [src]="'https://image.tmdb.org/t/p/w185' + ep.showPoster"
+                  [alt]="ep.showName"
+                  class="w-10 h-14 object-cover rounded shrink-0"
+                />
+              } @else {
+                <div class="w-10 h-14 bg-[#2a2a2a] rounded shrink-0"></div>
+              }
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold truncate group-hover:text-blue-400 transition-colors">{{ ep.showName }}</p>
+                <p class="text-gray-400 text-xs mt-0.5">S{{ ep.seasonNumber }} E{{ ep.episodeNumber }} — {{ ep.episodeName }}</p>
+                <span class="text-[10px] uppercase font-bold tracking-wider text-blue-400">Episode</span>
+              </div>
+              <div class="shrink-0 text-right">
+                <p class="text-gray-300 text-sm font-medium">{{ ep.airDate.slice(8, 10) }} {{ monthAbbr(ep.airDate.slice(5, 7)) }}</p>
+                <p class="text-gray-600 text-xs">{{ ep.airDate.slice(0, 4) }}</p>
               </div>
               <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-400 shrink-0 transition-colors ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

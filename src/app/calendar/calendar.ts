@@ -1,14 +1,28 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
+import { forkJoin, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { TmdbMedia } from '../models/tmdb.model';
 import { TmdbService } from '../services/tmdb.service';
+import { WatchlistService } from '../services/watchlist.service';
 
 interface CalendarDay {
   date: Date;
   dateStr: string;
   isToday: boolean;
   items: TmdbMedia[];
+  episodes: EpisodeEvent[];
+}
+
+export interface EpisodeEvent {
+  showId: number;
+  showName: string;
+  showPoster: string | null;
+  episodeName: string;
+  episodeNumber: number;
+  seasonNumber: number;
+  airDate: string;
 }
 
 @Component({
@@ -18,15 +32,18 @@ interface CalendarDay {
 })
 export class CalendarPage implements OnInit {
   private tmdb = inject(TmdbService);
+  private watchlist = inject(WatchlistService);
 
   constructor() {
     inject(Title).setTitle('Release Calendar | ReelScout');
   }
 
   loading = signal(true);
+  episodesLoading = signal(false);
   tab = signal<'movie' | 'tv'>('movie');
   viewMode = signal<'calendar' | 'list'>('calendar');
   releases = signal<TmdbMedia[]>([]);
+  episodeEvents = signal<EpisodeEvent[]>([]);
 
   readonly today = new Date();
   viewDate = signal(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
@@ -53,6 +70,12 @@ export class CalendarPage implements OnInit {
       if (d) { if (!byDate[d]) byDate[d] = []; byDate[d].push(m); }
     });
 
+    const byDateEpisodes: Record<string, EpisodeEvent[]> = {};
+    this.episodeEvents().forEach(ep => {
+      if (!byDateEpisodes[ep.airDate]) byDateEpisodes[ep.airDate] = [];
+      byDateEpisodes[ep.airDate].push(ep);
+    });
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const days: CalendarDay[] = [];
@@ -60,18 +83,20 @@ export class CalendarPage implements OnInit {
     const startPad = (firstDay.getDay() + 6) % 7;
     for (let i = startPad; i > 0; i--) {
       const d = new Date(year, month, 1 - i);
-      days.push({ date: d, dateStr: this.toDateStr(d), isToday: false, items: byDate[this.toDateStr(d)] ?? [] });
+      const ds = this.toDateStr(d);
+      days.push({ date: d, dateStr: ds, isToday: false, items: byDate[ds] ?? [], episodes: byDateEpisodes[ds] ?? [] });
     }
     for (let d = 1; d <= lastDay.getDate(); d++) {
       const date = new Date(year, month, d);
       const dateStr = this.toDateStr(date);
-      days.push({ date, dateStr, isToday: dateStr === todayStr, items: byDate[dateStr] ?? [] });
+      days.push({ date, dateStr, isToday: dateStr === todayStr, items: byDate[dateStr] ?? [], episodes: byDateEpisodes[dateStr] ?? [] });
     }
     const endPad = 7 - (days.length % 7);
     if (endPad < 7) {
       for (let i = 1; i <= endPad; i++) {
         const d = new Date(year, month + 1, i);
-        days.push({ date: d, dateStr: this.toDateStr(d), isToday: false, items: byDate[this.toDateStr(d)] ?? [] });
+        const ds = this.toDateStr(d);
+        days.push({ date: d, dateStr: ds, isToday: false, items: byDate[ds] ?? [], episodes: byDateEpisodes[ds] ?? [] });
       }
     }
 
@@ -108,8 +133,19 @@ export class CalendarPage implements OnInit {
     });
   });
 
+  upcomingEpisodes = computed((): EpisodeEvent[] => {
+    const todayStr = this.toDateStr(this.today);
+    const v = this.viewDate();
+    const monthEnd = this.monthEndStr(v);
+    const cutoff = this.monthStartStr(v) > todayStr ? this.monthStartStr(v) : todayStr;
+    return [...this.episodeEvents()]
+      .filter(ep => ep.airDate >= cutoff && ep.airDate <= monthEnd)
+      .sort((a, b) => a.airDate.localeCompare(b.airDate));
+  });
+
   ngOnInit(): void {
     this.loadReleases('movie');
+    this.loadWatchlistEpisodes();
   }
 
   switchTab(t: 'movie' | 'tv'): void {
@@ -121,17 +157,20 @@ export class CalendarPage implements OnInit {
     const v = this.viewDate();
     this.viewDate.set(new Date(v.getFullYear(), v.getMonth() - 1, 1));
     this.loadReleases(this.tab());
+    this.loadWatchlistEpisodes();
   }
 
   nextMonth(): void {
     const v = this.viewDate();
     this.viewDate.set(new Date(v.getFullYear(), v.getMonth() + 1, 1));
     this.loadReleases(this.tab());
+    this.loadWatchlistEpisodes();
   }
 
   goToToday(): void {
     this.viewDate.set(new Date(this.today.getFullYear(), this.today.getMonth(), 1));
     this.loadReleases(this.tab());
+    this.loadWatchlistEpisodes();
   }
 
   private loadReleases(type: 'movie' | 'tv'): void {
@@ -150,6 +189,48 @@ export class CalendarPage implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  private loadWatchlistEpisodes(): void {
+    const tvShows = this.watchlist.watching().filter(m => m.media_type === 'tv');
+    if (tvShows.length === 0) { this.episodeEvents.set([]); return; }
+
+    this.episodesLoading.set(true);
+    const v = this.viewDate();
+    const monthStart = this.monthStartStr(v);
+    const monthEnd = this.monthEndStr(v);
+
+    forkJoin(
+      tvShows.map(show =>
+        this.tmdb.getTvDetails(show.id).pipe(
+          switchMap(details => {
+            const seasonNum = details.next_episode_to_air?.season_number
+              ?? details.seasons.filter(s => s.season_number > 0).at(-1)?.season_number;
+            if (!seasonNum) return of<EpisodeEvent[]>([]);
+            return this.tmdb.getTvSeason(show.id, seasonNum).pipe(
+              map(season => season.episodes
+                .filter(ep => ep.air_date >= monthStart && ep.air_date <= monthEnd)
+                .map(ep => ({
+                  showId: show.id,
+                  showName: show.name ?? '',
+                  showPoster: show.poster_path,
+                  episodeName: ep.name,
+                  episodeNumber: ep.episode_number,
+                  seasonNumber: ep.season_number,
+                  airDate: ep.air_date,
+                }))
+              )
+            );
+          })
+        )
+      )
+    ).subscribe({
+      next: (results) => {
+        this.episodeEvents.set(results.flat());
+        this.episodesLoading.set(false);
+      },
+      error: () => this.episodesLoading.set(false),
     });
   }
 
